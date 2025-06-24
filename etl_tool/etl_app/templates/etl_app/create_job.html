@@ -1,0 +1,31 @@
+<h2>Create ETL Job</h2>
+<form method="post" class="etl-form" style="max-width: 500px; margin: auto;">
+  {% csrf_token %}
+  <div style="margin-bottom: 1em;">
+    <label for="id_name">Job Name:</label><br>
+    <input type="text" name="name" id="id_name" maxlength="100" placeholder="e.g. Customer Name Uppercase" class="form-control" required>
+    <small>Give your ETL job a descriptive name.</small>
+  </div>
+  <div style="margin-bottom: 1em;">
+    <label for="id_source_table">Source Table:</label><br>
+    <input type="text" name="source_table" id="id_source_table" maxlength="100" placeholder="e.g. customers" class="form-control" required>
+    <small>Enter the name of the table to extract data from.</small>
+  </div>
+  <div style="margin-bottom: 1em;">
+    <label for="id_target_table">Target Table:</label><br>
+    <input type="text" name="target_table" id="id_target_table" maxlength="100" placeholder="e.g. customers_transformed" class="form-control" required>
+    <small>Enter the name of the table to load transformed data into.</small>
+  </div>
+  <div style="margin-bottom: 1em;">
+    <label for="id_transformation_rule">Transformation Rule:</label><br>
+    <input type="text" name="transformation_rule" id="id_transformation_rule" maxlength="255" placeholder="e.g. UPPER(name)" class="form-control" required>
+    <small>Enter a SQL transformation (e.g., <code>UPPER(name)</code>).</small>
+  </div>
+  <button type="submit" class="btn btn-primary">Run ETL</button>
+</form>
+<style>
+  .etl-form label { font-weight: bold; }
+  .etl-form input { width: 100%; padding: 0.5em; margin-top: 0.2em; }
+  .etl-form small { color: #666; }
+  .etl-form button { width: 100%; padding: 0.7em; font-size: 1.1em; }
+</style>

@@ -1,0 +1,1 @@
+{"name": "", "source_table": "source_data", "target_table": "xyzfffddd", "transformation_rule": "[{\"column\": \"name_upper\", \"expression\": \"UPPER(name)\"}, {\"column\": \"age\", \"expression\": \"CASE WHEN age < 18 THEN 'minor' WHEN age < 65 THEN 'adult' ELSE 'senior' END\"}, {\"column\": \"bonus\", \"expression\": \"CASE WHEN age >= 18 THEN age* 0.10 ELSE 0 END\"}]"}

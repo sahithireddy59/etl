@@ -1,0 +1,32 @@
+[2025-06-24T10:15:48.071+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-24T10:15:47.025502+00:00 [queued]>
+[2025-06-24T10:15:48.089+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-24T10:15:47.025502+00:00 [queued]>
+[2025-06-24T10:15:48.090+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 1
+[2025-06-24T10:15:48.154+0000] {taskinstance.py:2214} INFO - Executing <Task(PythonOperator): run_etl_from_django> on 2025-06-24 10:15:47.025502+00:00
+[2025-06-24T10:15:48.161+0000] {standard_task_runner.py:60} INFO - Started process 72 to run task
+[2025-06-24T10:15:48.165+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'django_etl_monitor', 'run_etl_from_django', 'manual__2025-06-24T10:15:47.025502+00:00', '--job-id', '85', '--raw', '--subdir', 'DAGS_FOLDER/django_etl_monitor.py', '--cfg-path', '/tmp/tmpzbdxpvy0']
+[2025-06-24T10:15:48.168+0000] {standard_task_runner.py:88} INFO - Job 85: Subtask run_etl_from_django
+[2025-06-24T10:15:48.240+0000] {task_command.py:423} INFO - Running <TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-24T10:15:47.025502+00:00 [running]> on host 78d664e26a7a
+[2025-06-24T10:15:48.388+0000] {taskinstance.py:2510} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='django_etl_monitor' AIRFLOW_CTX_TASK_ID='run_etl_from_django' AIRFLOW_CTX_EXECUTION_DATE='2025-06-24T10:15:47.025502+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-24T10:15:47.025502+00:00'
+[2025-06-24T10:15:48.499+0000] {taskinstance.py:2728} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/models/taskinstance.py", line 444, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/models/taskinstance.py", line 414, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/operators/python.py", line 200, in execute
+    return_value = self.execute_callable()
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/operators/python.py", line 217, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+  File "/opt/airflow/dags/django_etl_monitor.py", line 77, in run_etl_from_conf
+    cur.execute(f"INSERT INTO {target_table} ({', '.join(output_columns)}) VALUES ({placeholders})", row)
+psycopg2.errors.UndefinedTable: relation "xyz" does not exist
+LINE 1: INSERT INTO xyz (name_upper, age, bonus) VALUES ('ALICE', 'a...
+                    ^
+
+[2025-06-24T10:15:48.531+0000] {taskinstance.py:1149} INFO - Marking task as FAILED. dag_id=django_etl_monitor, task_id=run_etl_from_django, execution_date=20250624T101547, start_date=20250624T101548, end_date=20250624T101548
+[2025-06-24T10:15:48.559+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 85 for task run_etl_from_django (relation "xyz" does not exist
+LINE 1: INSERT INTO xyz (name_upper, age, bonus) VALUES ('ALICE', 'a...
+                    ^
+; 72)
+[2025-06-24T10:15:48.583+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
+[2025-06-24T10:15:48.618+0000] {taskinstance.py:3309} INFO - 0 downstream tasks scheduled from follow-on schedule check

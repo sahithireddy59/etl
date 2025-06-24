@@ -1,0 +1,9 @@
+<h2>ETL Jobs</h2>
+<a href="{% url 'create_job' %}">Create New Job</a>
+<ul>
+  {% for job in jobs %}
+    <li>{{ job.name }} — {{ job.transformation_rule }}</li>
+  {% empty %}
+    <li>No jobs found.</li>
+  {% endfor %}
+</ul>
