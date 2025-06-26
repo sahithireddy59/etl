@@ -7,6 +7,7 @@ from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
+from django.views.decorators.http import require_http_methods
 
 def home(request):
     jobs = ETLJob.objects.all()
@@ -17,29 +18,34 @@ def create_job(request):
     if request.method == 'POST':
         if request.content_type == 'application/json':
             data = json.loads(request.body)
-            # Extract job info from pipeline JSON
             nodes = data.get('nodes', [])
             edges = data.get('edges', [])
-            # For demo: extract source, target, and transformation from nodes
+            # Improved job name logic (fix: check node['data']['type'])
+            job_name = data.get('name')
+            if not job_name:
+                has_filter = any(node.get('data', {}).get('type') == 'filter' for node in nodes)
+                has_expression = any(node.get('data', {}).get('type') == 'expression' for node in nodes)
+                if has_filter and has_expression:
+                    job_name = "Filter + Expression Load"
+                elif has_filter:
+                    job_name = "Filter Load"
+                elif has_expression:
+                    job_name = "Expression Load"
+                else:
+                    job_name = "One-to-One Load"
             source_table = ''
             target_table = ''
-            transformation_rules = []
             for node in nodes:
-                if node.get('type') == 'input':
+                node_type = node.get('data', {}).get('type', node.get('type'))
+                if node_type == 'input':
                     source_table = node.get('data', {}).get('label', '')
-                elif node.get('type') == 'output':
+                elif node_type == 'output':
                     target_table = node.get('data', {}).get('label', '')
-                elif node.get('type') == 'expression':
-                    exprs = node.get('data', {}).get('expressions', [])
-                    for expr in exprs:
-                        if expr.get('expression') and expr.get('column'):
-                            transformation_rules.append({
-                                'column': expr['column'],
-                                'expression': expr['expression']
-                            })
             import json as _json
-            transformation_rule_json = _json.dumps(transformation_rules)
+            # Always save as JSON, even if nodes/edges are empty
+            transformation_rule_json = _json.dumps({'nodes': nodes, 'edges': edges})
             job = ETLJob.objects.create(
+                name=job_name,
                 source_table=source_table,
                 target_table=target_table,
                 transformation_rule=transformation_rule_json
@@ -90,3 +96,13 @@ def table_data(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'columns': columns, 'rows': rows})
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_job(request, job_id):
+    try:
+        job = ETLJob.objects.get(id=job_id)
+        job.delete()
+        return JsonResponse({'status': 'deleted'})
+    except ETLJob.DoesNotExist:
+        return JsonResponse({'error': 'Job not found'}, status=404)

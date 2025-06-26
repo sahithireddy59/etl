@@ -1,0 +1,41 @@
+[2025-06-25T07:08:46.026+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-25T07:08:45.201800+00:00 [queued]>
+[2025-06-25T07:08:46.033+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-25T07:08:45.201800+00:00 [queued]>
+[2025-06-25T07:08:46.034+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 1
+[2025-06-25T07:08:46.046+0000] {taskinstance.py:2214} INFO - Executing <Task(PythonOperator): run_etl_from_django> on 2025-06-25 07:08:45.201800+00:00
+[2025-06-25T07:08:46.051+0000] {standard_task_runner.py:60} INFO - Started process 77 to run task
+[2025-06-25T07:08:46.055+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'django_etl_monitor', 'run_etl_from_django', 'manual__2025-06-25T07:08:45.201800+00:00', '--job-id', '103', '--raw', '--subdir', 'DAGS_FOLDER/django_etl_monitor.py', '--cfg-path', '/tmp/tmp08zaveyk']
+[2025-06-25T07:08:46.059+0000] {standard_task_runner.py:88} INFO - Job 103: Subtask run_etl_from_django
+[2025-06-25T07:08:46.105+0000] {task_command.py:423} INFO - Running <TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-25T07:08:45.201800+00:00 [running]> on host 2df34b4adfe5
+[2025-06-25T07:08:46.168+0000] {taskinstance.py:2510} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='django_etl_monitor' AIRFLOW_CTX_TASK_ID='run_etl_from_django' AIRFLOW_CTX_EXECUTION_DATE='2025-06-25T07:08:45.201800+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-25T07:08:45.201800+00:00'
+[2025-06-25T07:08:46.169+0000] {logging_mixin.py:188} INFO - [Airflow DAG] Received conf: {'job_id': 68, 'name': 'One-to-One Load', 'source_table': 'source_data', 'target_table': 'xyz', 'transformation_rule': '{"nodes": [{"id": "1", "type": "custom", "data": {"label": "source_data", "type": "input"}, "position": {"x": 0, "y": 100}, "width": 201, "height": 42, "selected": false, "dragging": false}, {"id": "2", "type": "custom", "data": {"label": "xyz", "type": "output"}, "position": {"x": 500, "y": 100}, "width": 201, "height": 42, "selected": false, "dragging": false}, {"id": "3", "type": "custom", "data": {"label": "Filter", "type": "filter", "condition": "age>20"}, "position": {"x": 241.63017466376914, "y": 106.00824051929473}, "width": 201, "height": 70, "selected": true, "positionAbsolute": {"x": 241.63017466376914, "y": 106.00824051929473}, "dragging": false}], "edges": [{"source": "1", "sourceHandle": null, "target": "3", "targetHandle": null, "id": "1-3"}, {"source": "3", "sourceHandle": null, "target": "2", "targetHandle": null, "id": "3-2"}]}'}
+[2025-06-25T07:08:46.178+0000] {logging_mixin.py:188} INFO - Pipeline parse error or not a pipeline: (psycopg2.OperationalError) connection to server at "localhost" (::1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/14/e3q8)
+[2025-06-25T07:08:46.239+0000] {taskinstance.py:2728} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/models/taskinstance.py", line 444, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/models/taskinstance.py", line 414, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/operators/python.py", line 200, in execute
+    return_value = self.execute_callable()
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/operators/python.py", line 217, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+  File "/opt/airflow/dags/django_etl_monitor.py", line 41, in run_etl_from_conf
+    run_etl_job(job)
+  File "/opt/airflow/etl_tool/etl_app/etl/etl_executor.py", line 146, in run_etl_job
+    cur.execute(insert_sql)
+psycopg2.errors.SyntaxError: syntax error at or near "{"
+LINE 1: INSERT INTO xyz SELECT {"nodes": [{"id": "1", "type": "custo...
+                               ^
+
+[2025-06-25T07:08:46.266+0000] {taskinstance.py:1149} INFO - Marking task as FAILED. dag_id=django_etl_monitor, task_id=run_etl_from_django, execution_date=20250625T070845, start_date=20250625T070846, end_date=20250625T070846
+[2025-06-25T07:08:46.277+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 103 for task run_etl_from_django (syntax error at or near "{"
+LINE 1: INSERT INTO xyz SELECT {"nodes": [{"id": "1", "type": "custo...
+                               ^
+; 77)
+[2025-06-25T07:08:46.308+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
+[2025-06-25T07:08:46.331+0000] {taskinstance.py:3309} INFO - 0 downstream tasks scheduled from follow-on schedule check

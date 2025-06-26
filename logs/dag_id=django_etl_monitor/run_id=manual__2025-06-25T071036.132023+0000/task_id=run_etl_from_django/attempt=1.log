@@ -1,0 +1,21 @@
+[2025-06-25T07:10:37.679+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-25T07:10:36.132023+00:00 [queued]>
+[2025-06-25T07:10:37.691+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-25T07:10:36.132023+00:00 [queued]>
+[2025-06-25T07:10:37.692+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 1
+[2025-06-25T07:10:37.707+0000] {taskinstance.py:2214} INFO - Executing <Task(PythonOperator): run_etl_from_django> on 2025-06-25 07:10:36.132023+00:00
+[2025-06-25T07:10:37.712+0000] {standard_task_runner.py:60} INFO - Started process 80 to run task
+[2025-06-25T07:10:37.718+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'django_etl_monitor', 'run_etl_from_django', 'manual__2025-06-25T07:10:36.132023+00:00', '--job-id', '104', '--raw', '--subdir', 'DAGS_FOLDER/django_etl_monitor.py', '--cfg-path', '/tmp/tmp6uxmffd0']
+[2025-06-25T07:10:37.721+0000] {standard_task_runner.py:88} INFO - Job 104: Subtask run_etl_from_django
+[2025-06-25T07:10:37.764+0000] {task_command.py:423} INFO - Running <TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-25T07:10:36.132023+00:00 [running]> on host 2df34b4adfe5
+[2025-06-25T07:10:37.827+0000] {taskinstance.py:2510} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='django_etl_monitor' AIRFLOW_CTX_TASK_ID='run_etl_from_django' AIRFLOW_CTX_EXECUTION_DATE='2025-06-25T07:10:36.132023+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-25T07:10:36.132023+00:00'
+[2025-06-25T07:10:37.829+0000] {logging_mixin.py:188} INFO - [Airflow DAG] Received conf: {'job_id': 69, 'name': 'One-to-One Load', 'source_table': 'source_data', 'target_table': 'xyz', 'transformation_rule': '{"nodes": [{"id": "1", "type": "custom", "data": {"label": "source_data", "type": "input"}, "position": {"x": 0, "y": 100}, "width": 201, "height": 42, "selected": false, "dragging": false}, {"id": "2", "type": "custom", "data": {"label": "xyz", "type": "output"}, "position": {"x": 500, "y": 100}, "width": 201, "height": 42, "selected": false, "dragging": false}, {"id": "3", "type": "custom", "data": {"label": "Filter", "type": "filter", "condition": "age>20"}, "position": {"x": 241.63017466376914, "y": 106.00824051929473}, "width": 201, "height": 70, "selected": true, "positionAbsolute": {"x": 241.63017466376914, "y": 106.00824051929473}, "dragging": false}], "edges": [{"source": "1", "sourceHandle": null, "target": "3", "targetHandle": null, "id": "1-3"}, {"source": "3", "sourceHandle": null, "target": "2", "targetHandle": null, "id": "3-2"}]}'}
+[2025-06-25T07:10:37.834+0000] {logging_mixin.py:188} INFO - Pipeline parse error or not a pipeline: (psycopg2.OperationalError) connection to server at "localhost" (::1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/14/e3q8)
+[2025-06-25T07:10:37.870+0000] {logging_mixin.py:188} INFO - ❌ Invalid fallback: transformation_rule is a pipeline JSON, not a SQL expression. Skipping fallback SQL execution.
+[2025-06-25T07:10:37.871+0000] {python.py:202} INFO - Done. Returned value was: None
+[2025-06-25T07:10:37.884+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=django_etl_monitor, task_id=run_etl_from_django, execution_date=20250625T071036, start_date=20250625T071037, end_date=20250625T071037
+[2025-06-25T07:10:37.929+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2025-06-25T07:10:37.945+0000] {taskinstance.py:3309} INFO - 0 downstream tasks scheduled from follow-on schedule check

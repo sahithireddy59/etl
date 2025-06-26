@@ -1,0 +1,26 @@
+[2025-06-25T11:52:33.513+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-25T11:52:31.943803+00:00 [queued]>
+[2025-06-25T11:52:33.529+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-25T11:52:31.943803+00:00 [queued]>
+[2025-06-25T11:52:33.530+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 1
+[2025-06-25T11:52:33.552+0000] {taskinstance.py:2214} INFO - Executing <Task(PythonOperator): run_etl_from_django> on 2025-06-25 11:52:31.943803+00:00
+[2025-06-25T11:52:33.560+0000] {standard_task_runner.py:60} INFO - Started process 102 to run task
+[2025-06-25T11:52:33.564+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'django_etl_monitor', 'run_etl_from_django', 'manual__2025-06-25T11:52:31.943803+00:00', '--job-id', '138', '--raw', '--subdir', 'DAGS_FOLDER/django_etl_monitor.py', '--cfg-path', '/tmp/tmp0wa6m2vd']
+[2025-06-25T11:52:33.567+0000] {standard_task_runner.py:88} INFO - Job 138: Subtask run_etl_from_django
+[2025-06-25T11:52:33.656+0000] {task_command.py:423} INFO - Running <TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-25T11:52:31.943803+00:00 [running]> on host e384131eec2a
+[2025-06-25T11:52:33.807+0000] {taskinstance.py:2510} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='django_etl_monitor' AIRFLOW_CTX_TASK_ID='run_etl_from_django' AIRFLOW_CTX_EXECUTION_DATE='2025-06-25T11:52:31.943803+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-25T11:52:31.943803+00:00'
+[2025-06-25T11:52:33.811+0000] {logging_mixin.py:188} INFO - [Airflow DAG] Received conf: {'job_id': 91, 'name': 'Filter + Expression Load', 'source_table': 'test_basic_f3', 'target_table': 'test_basic_f5', 'transformation_rule': '{"nodes": [{"id": "1", "type": "custom", "data": {"label": "test_basic_f3", "type": "input"}, "position": {"x": 0, "y": 100}, "width": 201, "height": 42, "selected": false, "dragging": false}, {"id": "2", "type": "custom", "data": {"label": "test_basic_f5", "type": "output"}, "position": {"x": 908.6434048899173, "y": 69.89523418950384}, "width": 201, "height": 42, "selected": true, "dragging": false, "positionAbsolute": {"x": 908.6434048899173, "y": 69.89523418950384}}, {"id": "3", "type": "custom", "data": {"label": "Filter", "type": "filter", "condition": "age>20"}, "position": {"x": 247.94575591010312, "y": 100.57690731800302}, "width": 201, "height": 70, "selected": false, "positionAbsolute": {"x": 247.94575591010312, "y": 100.57690731800302}, "dragging": false}, {"id": "4", "type": "custom", "data": {"label": "Expression", "type": "expression", "expressions": [{"column": "name", "expression": "upper(name)"}]}, "position": {"x": 471.56256397015034, "y": 83.81048657542476}, "width": 201, "height": 96, "selected": false, "positionAbsolute": {"x": 471.56256397015034, "y": 83.81048657542476}, "dragging": false}, {"id": "5", "type": "custom", "data": {"label": "Rollup", "type": "rollup", "groupBy": ["name"], "aggregations": {}}, "position": {"x": 667.1295902570438, "y": 71.66640232742489}, "width": 201, "height": 82, "selected": false, "positionAbsolute": {"x": 667.1295902570438, "y": 71.66640232742489}, "dragging": false}], "edges": [{"source": "1", "sourceHandle": null, "target": "3", "targetHandle": null, "id": "1-3"}, {"source": "3", "sourceHandle": null, "target": "4", "targetHandle": null, "id": "3-4"}, {"source": "4", "sourceHandle": null, "target": "5", "targetHandle": null, "id": "4-5"}, {"source": "5", "sourceHandle": null, "target": "2", "targetHandle": null, "id": "5-2"}]}'}
+[2025-06-25T11:52:33.955+0000] {logging_mixin.py:188} INFO - --- DataFrame to be written to target table ---
+[2025-06-25T11:52:33.962+0000] {logging_mixin.py:188} INFO -    id     name  age
+0   1    ALICE   30
+1   2  SAHITHI   30
+2   1    ALICE   30
+3   2  SAHITHI   30
+[2025-06-25T11:52:33.964+0000] {logging_mixin.py:188} INFO - id       int64
+name    object
+age      int64
+dtype: object
+[2025-06-25T11:52:33.966+0000] {logging_mixin.py:188} INFO - Rows to write: 4
+[2025-06-25T11:52:34.092+0000] {logging_mixin.py:188} INFO - ✅ ETL complete: 4 rows written to test_basic_f5
+[2025-06-25T11:52:34.093+0000] {python.py:202} INFO - Done. Returned value was: None
+[2025-06-25T11:52:34.311+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=django_etl_monitor, task_id=run_etl_from_django, execution_date=20250625T115231, start_date=20250625T115233, end_date=20250625T115234
+[2025-06-25T11:52:34.383+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2025-06-25T11:52:34.407+0000] {taskinstance.py:3309} INFO - 0 downstream tasks scheduled from follow-on schedule check

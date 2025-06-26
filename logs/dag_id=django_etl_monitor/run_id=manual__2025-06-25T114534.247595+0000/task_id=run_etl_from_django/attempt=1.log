@@ -1,0 +1,24 @@
+[2025-06-25T11:45:36.316+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-25T11:45:34.247595+00:00 [queued]>
+[2025-06-25T11:45:36.329+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-25T11:45:34.247595+00:00 [queued]>
+[2025-06-25T11:45:36.330+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 1
+[2025-06-25T11:45:36.356+0000] {taskinstance.py:2214} INFO - Executing <Task(PythonOperator): run_etl_from_django> on 2025-06-25 11:45:34.247595+00:00
+[2025-06-25T11:45:36.366+0000] {standard_task_runner.py:60} INFO - Started process 84 to run task
+[2025-06-25T11:45:36.371+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'django_etl_monitor', 'run_etl_from_django', 'manual__2025-06-25T11:45:34.247595+00:00', '--job-id', '132', '--raw', '--subdir', 'DAGS_FOLDER/django_etl_monitor.py', '--cfg-path', '/tmp/tmp9c88xr7e']
+[2025-06-25T11:45:36.376+0000] {standard_task_runner.py:88} INFO - Job 132: Subtask run_etl_from_django
+[2025-06-25T11:45:36.461+0000] {task_command.py:423} INFO - Running <TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-25T11:45:34.247595+00:00 [running]> on host e384131eec2a
+[2025-06-25T11:45:36.570+0000] {taskinstance.py:2510} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='django_etl_monitor' AIRFLOW_CTX_TASK_ID='run_etl_from_django' AIRFLOW_CTX_EXECUTION_DATE='2025-06-25T11:45:34.247595+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-25T11:45:34.247595+00:00'
+[2025-06-25T11:45:36.572+0000] {logging_mixin.py:188} INFO - [Airflow DAG] Received conf: {'job_id': 85, 'name': 'Filter + Expression Load', 'source_table': 'source_data', 'target_table': 'test_basic_f2', 'transformation_rule': '{"nodes": [{"id": "1", "type": "custom", "data": {"label": "source_data", "type": "input"}, "position": {"x": 0, "y": 100}, "width": 201, "height": 42, "selected": false, "dragging": false}, {"id": "2", "type": "custom", "data": {"label": "test_basic_f2", "type": "output"}, "position": {"x": 724.8251962572725, "y": 80.27667871432372}, "width": 201, "height": 42, "selected": true, "dragging": false, "positionAbsolute": {"x": 724.8251962572725, "y": 80.27667871432372}}, {"id": "3", "type": "custom", "data": {"label": "Filter", "type": "filter", "condition": "age<20"}, "position": {"x": 246.4139375048311, "y": 92.91781529164284}, "width": 201, "height": 70, "selected": false, "positionAbsolute": {"x": 246.4139375048311, "y": 92.91781529164284}, "dragging": false}, {"id": "4", "type": "custom", "data": {"label": "Expression", "type": "expression", "expressions": [{"column": "name", "expression": "upper(name)"}]}, "position": {"x": 486.88074802287065, "y": 76.15139454906456}, "width": 201, "height": 96, "selected": false, "positionAbsolute": {"x": 486.88074802287065, "y": 76.15139454906456}, "dragging": false}], "edges": [{"source": "1", "sourceHandle": null, "target": "3", "targetHandle": null, "id": "1-3"}, {"source": "3", "sourceHandle": null, "target": "4", "targetHandle": null, "id": "3-4"}, {"source": "4", "sourceHandle": null, "target": "2", "targetHandle": null, "id": "4-2"}]}'}
+[2025-06-25T11:45:36.720+0000] {logging_mixin.py:188} INFO - --- DataFrame to be written to target table ---
+[2025-06-25T11:45:36.724+0000] {logging_mixin.py:188} INFO - Empty DataFrame
+Columns: [id, name, age]
+Index: []
+[2025-06-25T11:45:36.726+0000] {logging_mixin.py:188} INFO - id       int64
+name    object
+age      int64
+dtype: object
+[2025-06-25T11:45:36.727+0000] {logging_mixin.py:188} INFO - Rows to write: 0
+[2025-06-25T11:45:36.914+0000] {logging_mixin.py:188} INFO - ✅ ETL complete: 0 rows written to test_basic_f2
+[2025-06-25T11:45:36.916+0000] {python.py:202} INFO - Done. Returned value was: None
+[2025-06-25T11:45:37.160+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=django_etl_monitor, task_id=run_etl_from_django, execution_date=20250625T114534, start_date=20250625T114536, end_date=20250625T114537
+[2025-06-25T11:45:37.231+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2025-06-25T11:45:37.258+0000] {taskinstance.py:3309} INFO - 0 downstream tasks scheduled from follow-on schedule check
