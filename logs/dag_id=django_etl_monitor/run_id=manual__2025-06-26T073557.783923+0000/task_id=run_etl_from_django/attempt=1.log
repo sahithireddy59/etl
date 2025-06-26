@@ -1,0 +1,26 @@
+[2025-06-26T07:35:59.616+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-26T07:35:57.783923+00:00 [queued]>
+[2025-06-26T07:35:59.624+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-26T07:35:57.783923+00:00 [queued]>
+[2025-06-26T07:35:59.625+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 1
+[2025-06-26T07:35:59.638+0000] {taskinstance.py:2214} INFO - Executing <Task(PythonOperator): run_etl_from_django> on 2025-06-26 07:35:57.783923+00:00
+[2025-06-26T07:35:59.646+0000] {standard_task_runner.py:60} INFO - Started process 77 to run task
+[2025-06-26T07:35:59.648+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'django_etl_monitor', 'run_etl_from_django', 'manual__2025-06-26T07:35:57.783923+00:00', '--job-id', '148', '--raw', '--subdir', 'DAGS_FOLDER/django_etl_monitor.py', '--cfg-path', '/tmp/tmplnig7u55']
+[2025-06-26T07:35:59.651+0000] {standard_task_runner.py:88} INFO - Job 148: Subtask run_etl_from_django
+[2025-06-26T07:35:59.700+0000] {task_command.py:423} INFO - Running <TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-26T07:35:57.783923+00:00 [running]> on host e384131eec2a
+[2025-06-26T07:35:59.767+0000] {taskinstance.py:2510} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='django_etl_monitor' AIRFLOW_CTX_TASK_ID='run_etl_from_django' AIRFLOW_CTX_EXECUTION_DATE='2025-06-26T07:35:57.783923+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-26T07:35:57.783923+00:00'
+[2025-06-26T07:35:59.769+0000] {logging_mixin.py:188} INFO - [Airflow DAG] Received conf: {'job_id': 99, 'name': 'One-to-One Load', 'source_table': 'xyz', 'target_table': 'Target_join', 'transformation_rule': '{"nodes": [{"id": "1", "type": "custom", "data": {"label": "source_data", "type": "input"}, "position": {"x": 0, "y": 100}, "width": 201, "height": 42, "selected": false, "dragging": false}, {"id": "2", "type": "custom", "data": {"label": "Target_join", "type": "output"}, "position": {"x": 500, "y": 98.62964898533437}, "width": 201, "height": 42, "selected": true, "positionAbsolute": {"x": 500, "y": 98.62964898533437}, "dragging": false}, {"id": "3", "type": "custom", "data": {"label": "xyz", "type": "input"}, "position": {"x": 0, "y": 180}, "width": 201, "height": 42, "selected": false, "dragging": false}, {"id": "4", "type": "custom", "data": {"label": "Joiner", "type": "joiner", "leftTable": "1", "rightTable": "3", "leftKey": "id", "rightKey": "id", "joinType": "inner", "selectedFields": []}, "position": {"x": 270, "y": 96.80014648437498}, "width": 201, "height": 99, "selected": false, "positionAbsolute": {"x": 270, "y": 96.80014648437498}, "dragging": false}], "edges": [{"source": "1", "sourceHandle": null, "target": "4", "targetHandle": null, "id": "1-4"}, {"source": "3", "sourceHandle": null, "target": "4", "targetHandle": null, "id": "3-4"}, {"source": "4", "sourceHandle": null, "target": "2", "targetHandle": null, "id": "4-2"}]}'}
+[2025-06-26T07:35:59.846+0000] {logging_mixin.py:188} INFO - --- DataFrame to be written to target table ---
+[2025-06-26T07:35:59.854+0000] {logging_mixin.py:188} INFO -    id     name  age
+0   1    ALICE   30
+1   2  sahithi   30
+2   1    ALICE   30
+3   2  sahithi   30
+[2025-06-26T07:35:59.856+0000] {logging_mixin.py:188} INFO - id       int64
+name    object
+age      int64
+dtype: object
+[2025-06-26T07:35:59.856+0000] {logging_mixin.py:188} INFO - Rows to write: 4
+[2025-06-26T07:35:59.926+0000] {logging_mixin.py:188} INFO - ✅ ETL complete: 4 rows written to Target_join
+[2025-06-26T07:35:59.927+0000] {python.py:202} INFO - Done. Returned value was: None
+[2025-06-26T07:36:00.237+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=django_etl_monitor, task_id=run_etl_from_django, execution_date=20250626T073557, start_date=20250626T073559, end_date=20250626T073600
+[2025-06-26T07:36:00.265+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2025-06-26T07:36:00.281+0000] {taskinstance.py:3309} INFO - 0 downstream tasks scheduled from follow-on schedule check

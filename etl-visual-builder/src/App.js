@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import ReactFlow, {
   MiniMap, Controls, Background, applyNodeChanges, applyEdgeChanges, Handle
 } from 'reactflow';
@@ -33,6 +33,13 @@ const CustomNode = (props) => {
             : <span style={{ color: '#aaa' }}>None</span>}
         </div>
       )}
+      {data.type === 'joiner' && (
+        <div style={{ fontSize: 13, marginTop: 6 }}>
+          <b>Join Table:</b> {data.joinTable || <span style={{ color: '#aaa' }}>None</span>}<br />
+          <b>Condition:</b> {data.joinCondition || <span style={{ color: '#aaa' }}>None</span>}<br />
+          <b>Type:</b> {data.joinType || <span style={{ color: '#aaa' }}>inner</span>}
+        </div>
+      )}
       <Handle type="target" position="top" />
       <Handle type="source" position="bottom" />
     </div>
@@ -63,6 +70,24 @@ export default function App() {
   const [simpleCopySource, setSimpleCopySource] = useState('');
   const [simpleCopyTarget, setSimpleCopyTarget] = useState('');
   const [aggInput, setAggInput] = useState('');
+  const [joinTable, setJoinTable] = useState('');
+  const [joinCondition, setJoinCondition] = useState('');
+  const [joinType, setJoinType] = useState('inner');
+  const [leftTable, setLeftTable] = useState('');
+  const [rightTable, setRightTable] = useState('');
+  const [leftKey, setLeftKey] = useState('');
+  const [rightKey, setRightKey] = useState('');
+  const [joinerFields, setJoinerFields] = useState([]);
+  const [leftTableColumns, setLeftTableColumns] = useState([]);
+  const [rightTableColumns, setRightTableColumns] = useState([]);
+  const [loadingLeftCols, setLoadingLeftCols] = useState(false);
+  const [loadingRightCols, setLoadingRightCols] = useState(false);
+  const [dialogPos, setDialogPos] = useState({ top: '25%', left: '35%' });
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const dragging = useRef(false);
+  const [leftTableError, setLeftTableError] = useState('');
+  const [rightTableError, setRightTableError] = useState('');
+  const [fieldNameMap, setFieldNameMap] = useState({});
 
   // Add node functions
   const addExpressionNode = () => {
@@ -101,6 +126,39 @@ export default function App() {
       },
     ]);
   };
+  const addJoinerNode = () => {
+    const newId = (nodes.length + 1).toString();
+    setNodes(nds => [
+      ...nds,
+      {
+        id: newId,
+        type: 'custom',
+        data: {
+          label: 'Joiner',
+          type: 'joiner',
+          leftTable: '',
+          rightTable: '',
+          leftKey: '',
+          rightKey: '',
+          joinType: 'inner',
+          selectedFields: [],
+        },
+        position: { x: 200 + nds.length * 40, y: 500 },
+      },
+    ]);
+  };
+  const addSourceTableNode = () => {
+    const newId = (nodes.length + 1).toString();
+    setNodes(nds => [
+      ...nds,
+      {
+        id: newId,
+        type: 'custom',
+        data: { label: 'Source Table', type: 'input' },
+        position: { x: 0, y: 100 + nds.length * 40 },
+      },
+    ]);
+  };
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -135,6 +193,13 @@ export default function App() {
           ? Object.entries(node.data.aggregations).map(([col, agg]) => `${col}:${agg}`).join(',')
           : ''
       );
+    } else if (node.data.type === 'joiner') {
+      setLeftTable(node.data.leftTable || '');
+      setRightTable(node.data.rightTable || '');
+      setLeftKey(node.data.leftKey || '');
+      setRightKey(node.data.rightKey || '');
+      setJoinType(node.data.joinType || 'inner');
+      setJoinerFields(node.data.selectedFields || []);
     }
   };
 
@@ -160,6 +225,9 @@ export default function App() {
                 ...(selectedNode.data.type === 'expression' ? { expressions } : {}),
                 ...(selectedNode.data.type === 'filter' ? { condition: filterCondition } : {}),
                 ...(selectedNode.data.type === 'rollup' ? { groupBy, aggregations: aggs } : {}),
+                ...(selectedNode.data.type === 'joiner' ? {
+                  leftTable, rightTable, leftKey, rightKey, joinType, selectedFields: joinerFields, fieldNameMap
+                } : {}),
               },
             }
           : n
@@ -253,6 +321,133 @@ export default function App() {
     }
   };
 
+  // Helper: get all input/source nodes
+  const sourceNodes = nodes.filter(n => n.data.type === 'input');
+
+  // Helper: get fields for a node (simulate for now)
+  const getFieldsForNode = (nodeId) => {
+    // In a real app, fetch schema from backend or cache
+    // For now, simulate with example fields
+    if (nodeId === '1') return ['CustomerID', 'Name', 'Region'];
+    if (nodeId === '2') return ['CustomerID', 'OrderID', 'Amount'];
+    return ['id', 'col1', 'col2'];
+  };
+
+  // When leftTable/rightTable changes, update available fields
+  useEffect(() => {
+    setLeftTableColumns(leftTable ? getFieldsForNode(leftTable) : []);
+  }, [leftTable]);
+  useEffect(() => {
+    setRightTableColumns(rightTable ? getFieldsForNode(rightTable) : []);
+  }, [rightTable]);
+
+  // Helper to get the label (table name) for a given node ID
+  const getNodeLabelById = (id) => {
+    const node = nodes.find(n => n.id === id);
+    return node ? node.data.label : '';
+  };
+
+  useEffect(() => {
+    if (leftTable) {
+      setLoadingLeftCols(true);
+      setLeftTableError('');
+      const tableName = getNodeLabelById(leftTable);
+      fetch(`http://localhost:8000/api/table-columns/?table=${encodeURIComponent(tableName)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            setLeftTableColumns([]);
+            setLeftTableError(data.error);
+          } else {
+            setLeftTableColumns(data.columns || []);
+            setLeftTableError('');
+          }
+          setLoadingLeftCols(false);
+        })
+        .catch((err) => {
+          setLeftTableColumns([]);
+          setLeftTableError('Fetch error');
+          setLoadingLeftCols(false);
+        });
+    } else {
+      setLeftTableColumns([]);
+      setLeftTableError('');
+    }
+  }, [leftTable, nodes]);
+
+  useEffect(() => {
+    if (rightTable) {
+      setLoadingRightCols(true);
+      setRightTableError('');
+      const tableName = getNodeLabelById(rightTable);
+      fetch(`http://localhost:8000/api/table-columns/?table=${encodeURIComponent(tableName)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            setRightTableColumns([]);
+            setRightTableError(data.error);
+          } else {
+            setRightTableColumns(data.columns || []);
+            setRightTableError('');
+          }
+          setLoadingRightCols(false);
+        })
+        .catch((err) => {
+          setRightTableColumns([]);
+          setRightTableError('Fetch error');
+          setLoadingRightCols(false);
+        });
+    } else {
+      setRightTableColumns([]);
+      setRightTableError('');
+    }
+  }, [rightTable, nodes]);
+
+  // When joinerFields changes, update fieldNameMap to include new fields with default names
+  useEffect(() => {
+    setFieldNameMap(prev => {
+      const updated = { ...prev };
+      joinerFields.forEach(f => {
+        if (!updated[f]) updated[f] = f;
+      });
+      // Remove fields no longer selected
+      Object.keys(updated).forEach(f => {
+        if (!joinerFields.includes(f)) delete updated[f];
+      });
+      return updated;
+    });
+  }, [joinerFields]);
+
+  const handleDialogMouseDown = (e) => {
+    dragging.current = true;
+    const dialog = document.getElementById('edit-node-dialog');
+    const rect = dialog.getBoundingClientRect();
+    dragOffset.current = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+    document.body.style.userSelect = 'none';
+  };
+  const handleDialogMouseMove = (e) => {
+    if (!dragging.current) return;
+    setDialogPos({
+      top: Math.max(0, e.clientY - dragOffset.current.y) + 'px',
+      left: Math.max(0, e.clientX - dragOffset.current.x) + 'px',
+    });
+  };
+  const handleDialogMouseUp = () => {
+    dragging.current = false;
+    document.body.style.userSelect = '';
+  };
+  useEffect(() => {
+    window.addEventListener('mousemove', handleDialogMouseMove);
+    window.addEventListener('mouseup', handleDialogMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleDialogMouseMove);
+      window.removeEventListener('mouseup', handleDialogMouseUp);
+    };
+  }, []);
+
   return (
     <div>
       <div style={{ height: 500 }}>
@@ -275,6 +470,8 @@ export default function App() {
           <button onClick={addExpressionNode} style={{ marginRight: 10 }}>Add Expression Node</button>
           <button onClick={addFilterNode} style={{ marginRight: 10 }}>Add Filter Node</button>
           <button onClick={addRollupNode} style={{ marginRight: 10 }}>Add Rollup Node</button>
+          <button onClick={addJoinerNode} style={{ marginRight: 10 }}>Add Joiner Node</button>
+          <button onClick={addSourceTableNode} style={{ marginRight: 10, background: '#e7f7ff' }}>Add Source Table Node</button>
           <button onClick={savePipeline} style={{ marginLeft: 10 }}>Save Pipeline</button>
           <button onClick={() => setShowSimpleCopy(true)} style={{ marginLeft: 10, background: '#2ecc40', color: '#fff' }}>Simple Copy</button>
           <button onClick={() => setShowHelp(h => !h)} style={{ marginLeft: 10 }}>Help</button>
@@ -304,10 +501,70 @@ export default function App() {
             </div>
           </div>
         )}
-        {/* Node editing dialogs */}
+        {/* Node editing dialog */}
         {selectedNode && (
-          <div style={{ position: 'fixed', top: '25%', left: '35%', background: '#fff', padding: 24, border: '1px solid #888', zIndex: 20, minWidth: 400 }}>
-            <h3>Edit Node</h3>
+          <div
+            id="edit-node-dialog"
+            style={{
+              position: 'fixed',
+              top: dialogPos.top,
+              left: dialogPos.left,
+              background: '#fff',
+              padding: 24,
+              border: '1px solid #888',
+              zIndex: 20,
+              minWidth: 400,
+              maxHeight: '80vh',
+              overflowY: 'auto',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
+              cursor: 'default',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 8,
+                cursor: 'move',
+                userSelect: 'none',
+              }}
+              onMouseDown={handleDialogMouseDown}
+            >
+              <h3 style={{ margin: 0, fontWeight: 500, fontSize: 20 }}>Edit Node</h3>
+              <div>
+                {selectedNode.data.type !== 'input' && selectedNode.data.type !== 'output' && (
+                  <button
+                    onClick={() => { deleteNodeAndRewire(selectedNode.id); setSelectedNode(null); }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      fontSize: 20,
+                      color: '#d00',
+                      cursor: 'pointer',
+                      marginRight: 8,
+                    }}
+                    aria-label="Delete Node"
+                    title="Delete Node"
+                  >
+                    🗑️
+                  </button>
+                )}
+                <button
+                  onClick={() => setSelectedNode(null)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    fontSize: 22,
+                    cursor: 'pointer',
+                    color: '#888',
+                  }}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
             <div>
               <label>Label:</label>
               <input
@@ -366,12 +623,61 @@ export default function App() {
                 />
               </div>
             )}
+            {selectedNode.data.type === 'joiner' && (
+              <div>
+                <label>Left Table:</label>
+                <select value={leftTable} onChange={e => setLeftTable(e.target.value)} style={{ width: '100%', marginBottom: 10 }}>
+                  <option value=''>Select...</option>
+                  {sourceNodes.map(n => <option key={n.id} value={n.id}>{n.data.label || n.id}</option>)}
+                </select>
+                <label>Right Table:</label>
+                <select value={rightTable} onChange={e => setRightTable(e.target.value)} style={{ width: '100%', marginBottom: 10 }}>
+                  <option value=''>Select...</option>
+                  {sourceNodes.map(n => <option key={n.id} value={n.id}>{n.data.label || n.id}</option>)}
+                </select>
+                <label>Left Join Key:</label>
+                <select value={leftKey} onChange={e => setLeftKey(e.target.value)} style={{ width: '100%', marginBottom: 10 }}>
+                  <option value=''>Select...</option>
+                  {loadingLeftCols ? <option>Loading...</option> : leftTableColumns.map(f => <option key={f} value={f}>{f}</option>)}
+                </select>
+                <label>Right Join Key:</label>
+                <select value={rightKey} onChange={e => setRightKey(e.target.value)} style={{ width: '100%', marginBottom: 10 }}>
+                  <option value=''>Select...</option>
+                  {loadingRightCols ? <option>Loading...</option> : rightTableColumns.map(f => <option key={f} value={f}>{f}</option>)}
+                </select>
+                <label>Join Type:</label>
+                <select value={joinType} onChange={e => setJoinType(e.target.value)} style={{ width: '100%', marginBottom: 10 }}>
+                  <option value="inner">Inner</option>
+                  <option value="left">Left</option>
+                  <option value="right">Right</option>
+                  <option value="outer">Full Outer</option>
+                  <option value="cross">Cross</option>
+                </select>
+                <label>Fields to include in output:</label>
+                <select multiple value={joinerFields} onChange={e => setJoinerFields(Array.from(e.target.selectedOptions, o => o.value))} style={{ width: '100%', marginBottom: 10, height: 80 }}>
+                  {leftTableColumns.map(f => <option key={'l_' + f} value={f}>{`L: ${f}`}</option>)}
+                  {rightTableColumns.map(f => <option key={'r_' + f} value={f + '_r'}>{`R: ${f}`}</option>)}
+                </select>
+                {joinerFields.length > 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <label style={{ display: 'block' }}>Customize Output Column Names:</label>
+                    {joinerFields.map(f => (
+                      <div key={f} style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
+                        <span style={{ minWidth: 80 }}>{f}</span>
+                        <input
+                          value={fieldNameMap[f] || ''}
+                          onChange={e => setFieldNameMap(m => ({ ...m, [f]: e.target.value }))}
+                          style={{ marginLeft: 8, width: 180 }}
+                          placeholder={f}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <div style={{ marginTop: 16 }}>
               <button onClick={handleSave}>Save</button>
-              {/* Only allow delete for non-source/target nodes */}
-              {selectedNode.data.type !== 'input' && selectedNode.data.type !== 'output' && (
-                <button onClick={() => deleteNodeAndRewire(selectedNode.id)} style={{ marginLeft: 10, color: 'red' }}>Delete Node</button>
-              )}
               <button onClick={() => setSelectedNode(null)} style={{ marginLeft: 10 }}>Cancel</button>
             </div>
           </div>

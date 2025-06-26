@@ -102,6 +102,60 @@ def apply_pipeline(df, pipeline_nodes, pipeline_edges):
                     df = df[group_by].drop_duplicates().reset_index(drop=True)
                 except Exception as e:
                     print(f"Rollup (distinct) error: {e}")
+        elif node.get('data', {}).get('type') == 'joiner':
+            left_table_id = node['data'].get('leftTable', '')
+            right_table_id = node['data'].get('rightTable', '')
+            left_key = node['data'].get('leftKey', '')
+            right_key = node['data'].get('rightKey', '')
+            join_type = node['data'].get('joinType', 'inner')
+            selected_fields = node['data'].get('selectedFields', [])
+            field_name_map = node['data'].get('fieldNameMap', {})
+
+            # For demo: map node id to table name (in real app, store mapping in node or pipeline)
+            node_id_to_table = {
+                '1': 'customers',
+                '2': 'orders',
+            }
+            left_table = node_id_to_table.get(left_table_id, left_table_id)
+            right_table = node_id_to_table.get(right_table_id, right_table_id)
+
+            if left_table and right_table:
+                try:
+                    # Load left and right tables
+                    engine = create_engine('postgresql://postgres:postgres@host.docker.internal/etl_db')
+                    df_left = pd.read_sql(f'SELECT * FROM "{left_table}"', engine)
+                    df_right = pd.read_sql(f'SELECT * FROM "{right_table}"', engine)
+
+                    # Validate join keys
+                    if join_type != 'cross':
+                        if left_key not in df_left.columns or right_key not in df_right.columns:
+                            raise Exception(f"Join key missing: {left_key} in left or {right_key} in right table")
+
+                    # Handle cross join
+                    if join_type == 'cross':
+                        df_left['_tmpkey'] = 1
+                        df_right['_tmpkey'] = 1
+                        df = pd.merge(df_left, df_right, on='_tmpkey', how='outer', suffixes=('', '_r'))
+                        df.drop('_tmpkey', axis=1, inplace=True)
+                    else:
+                        # Avoid column collisions by prefixing right table columns (except join key)
+                        right_cols = [c for c in df_right.columns if c != right_key]
+                        for col in right_cols:
+                            if col in df_left.columns:
+                                df_right.rename(columns={col: f'r_{col}'}, inplace=True)
+                        # Update right_key if renamed
+                        right_key_renamed = f'r_{right_key}' if right_key in df_left.columns else right_key
+                        df = pd.merge(df_left, df_right, how=join_type, left_on=left_key, right_on=right_key_renamed, suffixes=('', '_r'))
+
+                    # Select only the requested fields
+                    if selected_fields:
+                        df = df[[col for col in selected_fields if col in df.columns]]
+                    # Rename columns according to field_name_map
+                    if field_name_map:
+                        df = df.rename(columns=field_name_map)
+                    # else keep all columns
+                except Exception as e:
+                    print(f"Joiner error: {e}")
     return df
 
 def run_etl_job(job):
