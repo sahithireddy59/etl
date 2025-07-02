@@ -1,0 +1,1 @@
+[2025-07-02T06:54:44.650+0000] {scheduler_job_runner.py:781} ERROR - Executor reports task instance <TaskInstance: django_etl_monitor.source_data_1 manual__2025-07-02T06:54:42.029365+00:00 [queued]> finished (failed) although the task says it's queued. (Info: None) Was the task killed externally?

@@ -4,61 +4,32 @@
       "id": "1",
       "type": "custom",
       "data": {
-        "label": "source_data",
+        "label": "dim_samples",
         "type": "input"
       },
       "position": {
-        "x": 0.6752189141856348,
-        "y": 98.64956217162872
+        "x": 0,
+        "y": 100
       },
       "width": 201,
       "height": 42,
       "selected": false,
-      "positionAbsolute": {
-        "x": 0.6752189141856348,
-        "y": 98.64956217162872
-      },
       "dragging": false
     },
     {
       "id": "2",
       "type": "custom",
       "data": {
-        "label": "target_airflow",
+        "label": "dim_samples_test",
         "type": "output"
       },
       "position": {
-        "x": 501.26796777380434,
-        "y": 98.73203222619568
+        "x": 500,
+        "y": 100
       },
       "width": 201,
       "height": 42,
       "selected": false,
-      "positionAbsolute": {
-        "x": 501.26796777380434,
-        "y": 98.73203222619568
-      },
-      "dragging": false
-    },
-    {
-      "id": "3",
-      "type": "custom",
-      "data": {
-        "label": "Filter",
-        "type": "filter",
-        "condition": "age=30"
-      },
-      "position": {
-        "x": 221.67348240500115,
-        "y": 97.37879618043605
-      },
-      "width": 201,
-      "height": 70,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 221.67348240500115,
-        "y": 97.37879618043605
-      },
       "dragging": false
     }
   ],
@@ -66,16 +37,9 @@
     {
       "source": "1",
       "sourceHandle": null,
-      "target": "3",
-      "targetHandle": null,
-      "id": "1-3"
-    },
-    {
-      "source": "3",
-      "sourceHandle": null,
       "target": "2",
       "targetHandle": null,
-      "id": "3-2"
+      "id": "1-2"
     }
   ]
 }

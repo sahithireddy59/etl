@@ -1,27 +1,30 @@
 import sys
+import os
+sys.path.append('/opt/airflow/etl_tool')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'etl_tool.settings')
 print("PYTHON EXECUTABLE:", sys.executable)
 print("DAG FILE IS BEING PARSED")
+
+import django
+django.setup()
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
-import os
 import json
 import re
-
-# --- Django setup for Airflow ---
-sys.path.append('/opt/airflow/etl_tool')  # Adjust this path if needed!
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'etl_tool.settings')
-import django
-django.setup()
-# --- End Django setup ---
+from etl_app.models import ETLJob
+from etl_app.etl.etl_executor import run_etl_job
 
 # NOTE: For node-wise DAGs, use the generator script to create a new DAG file for each pipeline.
 # This file is now a placeholder/example only.
-
 def run_node(node_id, node_data, **context):
     print(f'Running node {node_id} of type {node_data.get("type")}', flush=True)
+    if node_data.get("type") == "output":
+        job = ETLJob.objects.latest('id')
+        run_etl_job(job)
 
+        
 def make_task_id(label, node_id):
     base = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', label)[:40]
     return f"{base}_{node_id}"

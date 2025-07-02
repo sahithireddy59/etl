@@ -1,0 +1,28 @@
+[2025-07-02T09:48:56.098+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: django_etl_monitor.dim_samples_test_2 manual__2025-07-02T09:48:51.522457+00:00 [queued]>
+[2025-07-02T09:48:56.106+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: django_etl_monitor.dim_samples_test_2 manual__2025-07-02T09:48:51.522457+00:00 [queued]>
+[2025-07-02T09:48:56.108+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 1
+[2025-07-02T09:48:56.126+0000] {taskinstance.py:2214} INFO - Executing <Task(PythonOperator): dim_samples_test_2> on 2025-07-02 09:48:51.522457+00:00
+[2025-07-02T09:48:56.131+0000] {standard_task_runner.py:60} INFO - Started process 60 to run task
+[2025-07-02T09:48:56.134+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'django_etl_monitor', 'dim_samples_test_2', 'manual__2025-07-02T09:48:51.522457+00:00', '--job-id', '282', '--raw', '--subdir', 'DAGS_FOLDER/django_etl_monitor.py', '--cfg-path', '/tmp/tmpof6p899p']
+[2025-07-02T09:48:56.136+0000] {standard_task_runner.py:88} INFO - Job 282: Subtask dim_samples_test_2
+[2025-07-02T09:48:56.192+0000] {task_command.py:423} INFO - Running <TaskInstance: django_etl_monitor.dim_samples_test_2 manual__2025-07-02T09:48:51.522457+00:00 [running]> on host 910a6b442d2c
+[2025-07-02T09:48:56.276+0000] {taskinstance.py:2510} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='django_etl_monitor' AIRFLOW_CTX_TASK_ID='dim_samples_test_2' AIRFLOW_CTX_EXECUTION_DATE='2025-07-02T09:48:51.522457+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-07-02T09:48:51.522457+00:00'
+[2025-07-02T09:48:56.278+0000] {logging_mixin.py:188} INFO - Running node 2 of type output
+[2025-07-02T09:48:56.990+0000] {logging_mixin.py:188} INFO - --- DataFrame to be written to target table ---
+[2025-07-02T09:48:57.004+0000] {logging_mixin.py:188} INFO -    id sample_id
+0   2    3NH3N5
+1   3      1043
+2   4     4FH15
+3   5    17U23Y
+4   6    4P46LS
+[2025-07-02T09:48:57.006+0000] {logging_mixin.py:188} INFO - id            int64
+sample_id    object
+dtype: object
+[2025-07-02T09:48:57.006+0000] {logging_mixin.py:188} INFO - Rows to write: 74343
+[2025-07-02T09:48:57.007+0000] {logging_mixin.py:188} INFO - About to write to SQL. DataFrame shape: (74343, 2)
+[2025-07-02T09:48:57.007+0000] {logging_mixin.py:188} INFO - Writing non-empty DataFrame to SQL
+[2025-07-02T09:48:57.908+0000] {logging_mixin.py:188} INFO - Write to SQL complete
+[2025-07-02T09:48:57.911+0000] {python.py:202} INFO - Done. Returned value was: None
+[2025-07-02T09:48:57.920+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=django_etl_monitor, task_id=dim_samples_test_2, execution_date=20250702T094851, start_date=20250702T094856, end_date=20250702T094857
+[2025-07-02T09:48:57.960+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 0
+[2025-07-02T09:48:57.982+0000] {taskinstance.py:3309} INFO - 0 downstream tasks scheduled from follow-on schedule check

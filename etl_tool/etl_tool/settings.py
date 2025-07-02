@@ -52,11 +52,14 @@ WSGI_APPLICATION = 'etl_tool.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'etl_db',
+        'NAME': 'release',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': '5432',
+        'OPTIONS': {
+            'options': '-c search_path=animal_biome_production'
+        }
     }
 }
 

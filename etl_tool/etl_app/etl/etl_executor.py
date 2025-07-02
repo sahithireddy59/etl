@@ -124,7 +124,7 @@ def apply_pipeline(df, pipeline_nodes, pipeline_edges, job):
             if left_table and right_table:
                 try:
                     # Load left and right tables
-                    engine = create_engine('postgresql://postgres:postgres@host.docker.internal/etl_db')
+                    engine = create_engine('postgresql://postgres:postgres@host.docker.internal/release?options=-csearch_path%3Danimal_biome_production')
                     df_left = pd.read_sql(f'SELECT * FROM "{left_table}"', engine)
                     df_right = pd.read_sql(f'SELECT * FROM "{right_table}"', engine)
 
@@ -174,7 +174,7 @@ def run_etl_job(job):
                 df = pd.read_csv(source_table)
             else:
                 # Load from DB
-                engine = create_engine('postgresql://postgres:postgres@host.docker.internal/etl_db')
+                engine = create_engine('postgresql://postgres:postgres@host.docker.internal/release?options=-csearch_path%3Danimal_biome_production')
                 df = pd.read_sql(f'SELECT * FROM "{source_table}"', engine)
             df_result = apply_pipeline(df, pipeline['nodes'], pipeline['edges'], job)
             # Debug: print DataFrame info before writing
@@ -182,21 +182,26 @@ def run_etl_job(job):
             print(df_result.head())
             print(df_result.dtypes)
             print(f"Rows to write: {len(df_result)}")
-            # Write to DB
-            engine = create_engine('postgresql://postgres:postgres@host.docker.internal/etl_db')
-            df_result.to_sql(target_table, engine, if_exists='append', index=False)
-            print(f"✅ ETL complete: {len(df_result)} rows written to {target_table}")
+            print("About to write to SQL. DataFrame shape:", df_result.shape)
+            if not df_result.empty:
+                print("Writing non-empty DataFrame to SQL")
+                df_result.to_sql(target_table, engine, if_exists='append', index=False, schema='animal_biome_production')
+            else:
+                print("DataFrame is empty, creating table structure only")
+                df_result.head(0).to_sql(target_table, engine, if_exists='replace', index=False, schema='animal_biome_production')
+            print("Write to SQL complete")
             return
     except Exception as e:
         print(f"Pipeline parse error or not a pipeline: {e}")
         raise
     # Fallback: old logic
     conn = psycopg2.connect(
-        dbname='etl_db',
+        dbname='release',
         user='postgres',
         password='postgres',
         host=os.environ.get('DB_HOST', 'localhost'),
-        port='5432'
+        port='5432',
+        options='-c search_path=animal_biome_production'
     )
     cur = conn.cursor()
 
