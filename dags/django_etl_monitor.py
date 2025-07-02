@@ -1,54 +1,68 @@
+import sys
+print("PYTHON EXECUTABLE:", sys.executable)
+print("DAG FILE IS BEING PARSED")
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
-import sys
 import os
 import json
+import re
 
-# Add the project root to sys.path so we can import as a package
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from etl_tool.etl_app.etl.etl_executor import run_etl_job
+# --- Django setup for Airflow ---
+sys.path.append('/opt/airflow/etl_tool')  # Adjust this path if needed!
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'etl_tool.settings')
+import django
+django.setup()
+# --- End Django setup ---
 
-# WARNING: Executing arbitrary Python code is dangerous! Only use this if you trust all job creators.
-def run_etl_from_conf(**context):
-    conf = context['dag_run'].conf
-    print(f"[Airflow DAG] Received conf: {conf}")
-    job_id = conf.get("job_id")
-    name = conf.get("name")
-    source_table = conf.get("source_table")
-    target_table = conf.get("target_table")
-    transformation_rule = conf.get("transformation_rule")
+# NOTE: For node-wise DAGs, use the generator script to create a new DAG file for each pipeline.
+# This file is now a placeholder/example only.
 
-    missing = []
-    for field, value in [("source_table", source_table), ("target_table", target_table)]:
-        if not value:
-            missing.append(field)
-    if "transformation_rule" not in conf:
-        missing.append("transformation_rule")
-    if missing:
-        raise ValueError(f"Missing job configuration in conf: {', '.join(missing)}. Full conf: {conf}")
+def run_node(node_id, node_data, **context):
+    print(f'Running node {node_id} of type {node_data.get("type")}', flush=True)
 
-    # Build a job-like object (can be a simple class or dict with attributes)
-    class Job:
-        pass
-    job = Job()
-    job.source_table = source_table
-    job.target_table = target_table
-    job.transformation_rule = transformation_rule
-    job.id = job_id
-    job.name = name
+def make_task_id(label, node_id):
+    base = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', label)[:40]
+    return f"{base}_{node_id}"
 
-    run_etl_job(job)
+# Read the latest pipeline JSON at DAG parse time, with error handling
+pipeline_path = '/opt/airflow/shared/etl_jobs.json'
+try:
+    with open(pipeline_path) as f:
+        pipeline = json.load(f)
+    nodes = pipeline["nodes"]
+    edges = pipeline["edges"]
+    print(f"[DAG DEBUG] Loaded nodes: {nodes}")
+    print(f"[DAG DEBUG] Loaded edges: {edges}")
+except Exception as e:
+    print(f"[DAG WARNING] Error loading pipeline JSON: {e}")
+    nodes = []
+    edges = []
+
+def get_label(node):
+    return node['data'].get('label') or node['data'].get('type') or f"node_{node['id']}"
 
 with DAG(
     dag_id="django_etl_monitor",
     start_date=days_ago(1),
     schedule_interval=None,
     catchup=False,
-    tags=["django", "etl"]
+    tags=["etl"]
 ) as dag:
-    execute_etl = PythonOperator(
-        task_id="run_etl_from_django",
-        python_callable=run_etl_from_conf,
-        provide_context=True
-    )
+    # Dynamically create tasks
+    node_id_to_task = {}
+    for node in nodes:
+        label = get_label(node)
+        task_id = make_task_id(label, node['id'])
+        node_id_to_task[node['id']] = task_id
+        locals()[task_id] = PythonOperator(
+            task_id=task_id,
+            python_callable=run_node,
+            op_kwargs={'node_id': node['id'], 'node_data': node['data']}
+        )
+    # Set dependencies
+    for edge in edges:
+        src = node_id_to_task[edge['source']]
+        tgt = node_id_to_task[edge['target']]
+        locals()[src] >> locals()[tgt]

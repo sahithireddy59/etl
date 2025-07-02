@@ -45,6 +45,8 @@ import os
 import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine
+from etl_app.models import ETLNodeStatus
+from django.utils import timezone
 
 def table_exists(cur, table_name):
     cur.execute("""
@@ -55,7 +57,7 @@ def table_exists(cur, table_name):
     """, (table_name,))
     return cur.fetchone()[0]
 
-def apply_pipeline(df, pipeline_nodes, pipeline_edges):
+def apply_pipeline(df, pipeline_nodes, pipeline_edges, job):
     # Process nodes in the order: input -> filter -> expression -> rollup -> output
     node_types = ['input', 'filter', 'expression', 'rollup', 'output']
     ordered_nodes = []
@@ -156,6 +158,7 @@ def apply_pipeline(df, pipeline_nodes, pipeline_edges):
                     # else keep all columns
                 except Exception as e:
                     print(f"Joiner error: {e}")
+        log_node_status(job.id, node['id'], node['data']['type'], 'success')
     return df
 
 def run_etl_job(job):
@@ -173,7 +176,7 @@ def run_etl_job(job):
                 # Load from DB
                 engine = create_engine('postgresql://postgres:postgres@host.docker.internal/etl_db')
                 df = pd.read_sql(f'SELECT * FROM "{source_table}"', engine)
-            df_result = apply_pipeline(df, pipeline['nodes'], pipeline['edges'])
+            df_result = apply_pipeline(df, pipeline['nodes'], pipeline['edges'], job)
             # Debug: print DataFrame info before writing
             print('--- DataFrame to be written to target table ---')
             print(df_result.head())
@@ -192,7 +195,7 @@ def run_etl_job(job):
         dbname='etl_db',
         user='postgres',
         password='postgres',
-        host='host.docker.internal',
+        host=os.environ.get('DB_HOST', 'localhost'),
         port='5432'
     )
     cur = conn.cursor()
@@ -237,15 +240,32 @@ def run_etl_job(job):
     conn.close()
 
 def save_job_to_airflow(job):
-    job_dict = {
-        "name": job.name,
-        "source_table": job.source_table,
-        "target_table": job.target_table,
-        "transformation_rule": job.transformation_rule
-    }
+    import json
+
+    # Parse the transformation_rule string to get nodes and edges
+    try:
+        tr = job.transformation_rule
+        if isinstance(tr, str):
+            tr = json.loads(tr)
+        nodes = tr.get("nodes", [])
+        edges = tr.get("edges", [])
+        pipeline_data = {"nodes": nodes, "edges": edges}
+    except Exception as e:
+        print(f"Error parsing transformation_rule: {e}")
+        pipeline_data = {"nodes": [], "edges": []}
 
     airflow_file = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../shared/etl_jobs.json"))
     os.makedirs(os.path.dirname(airflow_file), exist_ok=True)
 
     with open(airflow_file, "w") as f:
-        json.dump(job_dict, f)
+        json.dump(pipeline_data, f, indent=2)
+
+def log_node_status(job_id, node_id, node_type, status, message=''):
+    ETLNodeStatus.objects.create(
+        job_id=job_id,
+        node_id=node_id,
+        node_type=node_type,
+        status=status,
+        message=message,
+        timestamp=timezone.now()
+    )

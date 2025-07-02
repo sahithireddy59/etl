@@ -1,13 +1,16 @@
 from django.shortcuts import render, redirect
 from .forms import ETLJobForm
-from .models import ETLJob
+from .models import ETLJob, ETLNodeStatus
 from .etl.etl_executor import run_etl_job, save_job_to_airflow
 from .etl.airflow_trigger import trigger_airflow_dag_with_job  # ✅ Add this
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_GET, require_POST
+import os
+import subprocess
+import requests
 
 def home(request):
     jobs = ETLJob.objects.all()
@@ -106,3 +109,82 @@ def delete_job(request, job_id):
         return JsonResponse({'status': 'deleted'})
     except ETLJob.DoesNotExist:
         return JsonResponse({'error': 'Job not found'}, status=404)
+
+@require_GET
+def node_status(request):
+    job_id = request.GET.get('job_id')
+    if not job_id:
+        return JsonResponse({'error': 'Missing job_id'}, status=400)
+    statuses = ETLNodeStatus.objects.filter(job_id=job_id).order_by('timestamp')
+    data = [
+        {
+            'node_id': s.node_id,
+            'node_type': s.node_type,
+            'status': s.status,
+            'message': s.message,
+            'timestamp': s.timestamp.isoformat(),
+        }
+        for s in statuses
+    ]
+    return JsonResponse({'statuses': data})
+
+@csrf_exempt
+@require_POST
+def save_pipeline(request):
+    try:
+        data = json.loads(request.body)
+        # Extract nodes/edges from transformation_rule if present
+        if "transformation_rule" in data:
+            tr = data["transformation_rule"]
+            if isinstance(tr, str):
+                tr = json.loads(tr)
+            nodes = tr.get("nodes", [])
+            edges = tr.get("edges", [])
+            pipeline_data = {"nodes": nodes, "edges": edges}
+        else:
+            pipeline_data = {"nodes": data.get("nodes", []), "edges": data.get("edges", [])}
+        # Write only nodes/edges to etl_jobs.json
+        with open("shared/etl_jobs.json", "w") as f:
+            json.dump(pipeline_data, f)
+        return JsonResponse({"status": "success"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def update_pipeline(request):
+    try:
+        data = json.loads(request.body)
+        if "transformation_rule" in data:
+            tr = data["transformation_rule"]
+            if isinstance(tr, str):
+                tr = json.loads(tr)
+            nodes = tr.get("nodes", [])
+            edges = tr.get("edges", [])
+            pipeline_data = {"nodes": nodes, "edges": edges}
+        else:
+            pipeline_data = {"nodes": data.get("nodes", []), "edges": data.get("edges", [])}
+        with open("shared/etl_jobs.json", "w") as f:
+            json.dump(pipeline_data, f)
+        return JsonResponse({"status": "success"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_pipeline(request):
+    try:
+        data = json.loads(request.body)
+        dag_id = data.get("dag_id")
+        if not dag_id:
+            return JsonResponse({"status": "error", "message": "dag_id required"}, status=400)
+        pipeline_json_path = f"shared/{dag_id}.json"
+        dag_file_path = f"dags/{dag_id}.py"
+        # Delete files if they exist
+        if os.path.exists(pipeline_json_path):
+            os.remove(pipeline_json_path)
+        if os.path.exists(dag_file_path):
+            os.remove(dag_file_path)
+        return JsonResponse({"status": "success", "dag_id": dag_id})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)

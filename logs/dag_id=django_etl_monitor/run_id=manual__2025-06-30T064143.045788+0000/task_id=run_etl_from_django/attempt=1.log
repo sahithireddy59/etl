@@ -1,0 +1,77 @@
+[2025-06-30T06:41:46.030+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-30T06:41:43.045788+00:00 [queued]>
+[2025-06-30T06:41:46.040+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-30T06:41:43.045788+00:00 [queued]>
+[2025-06-30T06:41:46.042+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 1
+[2025-06-30T06:41:46.058+0000] {taskinstance.py:2214} INFO - Executing <Task(PythonOperator): run_etl_from_django> on 2025-06-30 06:41:43.045788+00:00
+[2025-06-30T06:41:46.063+0000] {standard_task_runner.py:60} INFO - Started process 57 to run task
+[2025-06-30T06:41:46.079+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'django_etl_monitor', 'run_etl_from_django', 'manual__2025-06-30T06:41:43.045788+00:00', '--job-id', '181', '--raw', '--subdir', 'DAGS_FOLDER/django_etl_monitor.py', '--cfg-path', '/tmp/tmpdxgezzww']
+[2025-06-30T06:41:46.092+0000] {standard_task_runner.py:88} INFO - Job 181: Subtask run_etl_from_django
+[2025-06-30T06:41:46.152+0000] {task_command.py:423} INFO - Running <TaskInstance: django_etl_monitor.run_etl_from_django manual__2025-06-30T06:41:43.045788+00:00 [running]> on host 1e5276e652c5
+[2025-06-30T06:41:46.229+0000] {taskinstance.py:2510} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='django_etl_monitor' AIRFLOW_CTX_TASK_ID='run_etl_from_django' AIRFLOW_CTX_EXECUTION_DATE='2025-06-30T06:41:43.045788+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-06-30T06:41:43.045788+00:00'
+[2025-06-30T06:41:46.246+0000] {logging_mixin.py:188} INFO - [Airflow DAG] Received conf: {'job_id': 105, 'name': 'Filter Load', 'source_table': 'source_dta', 'target_table': 'xyz1', 'transformation_rule': '{"nodes": [{"id": "1", "type": "custom", "data": {"label": "source_dta", "type": "input"}, "position": {"x": 1.572224970341523, "y": 98.42777502965848}, "width": 201, "height": 42, "selected": false, "positionAbsolute": {"x": 1.572224970341523, "y": 98.42777502965848}, "dragging": false}, {"id": "2", "type": "custom", "data": {"label": "xyz1", "type": "output"}, "position": {"x": 500, "y": 100}, "width": 201, "height": 42, "selected": true, "dragging": false}, {"id": "3", "type": "custom", "data": {"label": "Filter", "type": "filter", "condition": "age>=40"}, "position": {"x": 251.6999505338527, "y": 94.03852888526146}, "width": 201, "height": 70, "selected": false, "positionAbsolute": {"x": 251.6999505338527, "y": 94.03852888526146}, "dragging": false}], "edges": [{"source": "1", "sourceHandle": null, "target": "3", "targetHandle": null, "id": "1-3"}, {"source": "3", "sourceHandle": null, "target": "2", "targetHandle": null, "id": "3-2"}]}'}
+[2025-06-30T06:41:46.336+0000] {logging_mixin.py:188} INFO - Pipeline parse error or not a pipeline: (psycopg2.errors.UndefinedTable) relation "source_dta" does not exist
+LINE 1: SELECT * FROM "source_dta"
+                      ^
+
+[SQL: SELECT * FROM "source_dta"]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+[2025-06-30T06:41:46.337+0000] {taskinstance.py:2728} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "/home/airflow/.local/lib/python3.8/site-packages/sqlalchemy/engine/default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedTable: relation "source_dta" does not exist
+LINE 1: SELECT * FROM "source_dta"
+                      ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/models/taskinstance.py", line 444, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/models/taskinstance.py", line 414, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/operators/python.py", line 200, in execute
+    return_value = self.execute_callable()
+  File "/home/airflow/.local/lib/python3.8/site-packages/airflow/operators/python.py", line 217, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+  File "/opt/airflow/dags/django_etl_monitor.py", line 48, in run_etl_from_conf
+    run_etl_job(job)
+  File "/opt/airflow/etl_tool/etl_app/etl/etl_executor.py", line 178, in run_etl_job
+    df = pd.read_sql(f'SELECT * FROM "{source_table}"', engine)
+  File "/home/airflow/.local/lib/python3.8/site-packages/pandas/io/sql.py", line 663, in read_sql
+    return pandas_sql.read_query(
+  File "/home/airflow/.local/lib/python3.8/site-packages/pandas/io/sql.py", line 1738, in read_query
+    result = self.execute(sql, params)
+  File "/home/airflow/.local/lib/python3.8/site-packages/pandas/io/sql.py", line 1562, in execute
+    return self.con.exec_driver_sql(sql, *args)
+  File "/home/airflow/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1770, in exec_driver_sql
+    return self._exec_driver_sql(
+  File "/home/airflow/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1674, in _exec_driver_sql
+    ret = self._execute_context(
+  File "/home/airflow/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1953, in _execute_context
+    self._handle_dbapi_exception(
+  File "/home/airflow/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 2134, in _handle_dbapi_exception
+    util.raise_(
+  File "/home/airflow/.local/lib/python3.8/site-packages/sqlalchemy/util/compat.py", line 211, in raise_
+    raise exception
+  File "/home/airflow/.local/lib/python3.8/site-packages/sqlalchemy/engine/base.py", line 1910, in _execute_context
+    self.dialect.do_execute(
+  File "/home/airflow/.local/lib/python3.8/site-packages/sqlalchemy/engine/default.py", line 736, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedTable) relation "source_dta" does not exist
+LINE 1: SELECT * FROM "source_dta"
+                      ^
+
+[SQL: SELECT * FROM "source_dta"]
+(Background on this error at: https://sqlalche.me/e/14/f405)
+[2025-06-30T06:41:46.373+0000] {taskinstance.py:1149} INFO - Marking task as FAILED. dag_id=django_etl_monitor, task_id=run_etl_from_django, execution_date=20250630T064143, start_date=20250630T064146, end_date=20250630T064146
+[2025-06-30T06:41:46.391+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 181 for task run_etl_from_django ((psycopg2.errors.UndefinedTable) relation "source_dta" does not exist
+LINE 1: SELECT * FROM "source_dta"
+                      ^
+
+[SQL: SELECT * FROM "source_dta"]
+(Background on this error at: https://sqlalche.me/e/14/f405); 57)
+[2025-06-30T06:41:46.413+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
+[2025-06-30T06:41:46.427+0000] {taskinstance.py:3309} INFO - 0 downstream tasks scheduled from follow-on schedule check
